@@ -14,11 +14,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 });
 
 document.addEventListener("keydown", (e) => {
+  console.log("keys isss ,",e);
+  console.log("action key iss, ",keyMap)
   const newKey = e.key.toLowerCase();
-  const actionKey = Object.keys(keyMap).find(
-    (targetKey) => keyMap[targetKey]?.toLowerCase() === newKey
+  let actionKey = Object.keys(keyMap).find(
+    (targetKey) => keyMap[targetKey]?.from === newKey
   );
-
+   actionKey = keyMap[actionKey];
+  console.log("actionssss key is ",actionKey);
   if (actionKey) {
     e.preventDefault();
     simulateRealKeyPress(actionKey);
@@ -26,27 +29,28 @@ document.addEventListener("keydown", (e) => {
 });
 
 function simulateRealKeyPress(key) {
-  const specialKeyCodes = {
-    "ArrowLeft": 37,
-    "ArrowUp": 38,
-    "ArrowRight": 39,
-    "ArrowDown": 40,
-    " ": 32,
-    "Enter": 13,
-    "Escape": 27,
-    // Add more if needed
-  };
-
-  const keyCode = specialKeyCodes[key] || key.charCodeAt(0);
-  console.log("key press isss",key.charCodeAt)
+  console.log("key isss ",key)
+  key = key.eventDetails
+  // const specialKeyCodes = {
+  //   "ArrowLeft": 37,
+  //   "ArrowUp": 38,
+  //   "ArrowRight": 39,
+  //   "ArrowDown": 40,
+  //   " ": 32,
+  //   "Enter": 13,
+  //   "Escape": 27,
+  //   // Add more if needed
+  // };
+  console.log("key presssssssssssss isss",key)
   const event = new KeyboardEvent("keydown", {
-    key: key,
-    code: key,
-    keyCode: keyCode,
-    which: keyCode,
+    key: key.key,
+    code: key.code,
+    keyCode: key.keyCode,
+    which: key.which,
     bubbles: true,
     cancelable: true
   });
+  console.log("key event isss",event);
 
   (document.activeElement || document.body).dispatchEvent(event);
 }

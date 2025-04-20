@@ -1,3 +1,32 @@
+chrome.storage.sync.get("keybindings", ({ keybindings }) => {
+  fullKeyDetails = keybindings || {};
+  const keys = Object.keys(fullKeyDetails);
+  for(const key of keys){
+    fullKeyDetails[key] = fullKeyDetails[key].eventDetails
+  }
+});
+document.addEventListener("keydown", (e) => {
+  console.log("key tessss")
+  const activeInput = document.activeElement;
+  if (activeInput.classList.contains("toKey")) {
+    e.preventDefault();
+    activeInput.value = e.key; // Show just the key
+    fullKeyDetails[e.key] = {
+      key: e.key,
+      code: e.code,
+      keyCode: e.keyCode,
+      which: e.which,
+      ctrlKey: e.ctrlKey,
+      shiftKey: e.shiftKey,
+      altKey: e.altKey,
+      metaKey: e.metaKey,
+      location: e.location
+    };
+  }
+});
+
+
+
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("keybindingsForm");
   const mappingsDiv = document.getElementById("mappings");
@@ -7,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const row = document.createElement("div");
     row.className = "mapping-row";
 row.innerHTML = `
-  <input type="text" class="fromKey" readonly value="${from}" placeholder="From key"/>
+  <input type="text" class="fromKey" readonly value="${from.from}" placeholder="From key"/>
     <span>TO</span>
     <input type="text" class="toKey" readonly value="${to}" placeholder="To key"/>
      <button type="button" class="deleteMapping">X</button>
@@ -52,18 +81,24 @@ row.querySelector(".deleteMapping").addEventListener("click", () => {
   });
 }
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const fromKeys = form.querySelectorAll(".fromKey");
-    const toKeys = form.querySelectorAll(".toKey");
 
-    const bindings = {};
-    for (let i = 0; i < fromKeys.length; i++) {
-      const from = fromKeys[i].value.toLowerCase();
-      const to = toKeys[i].value;
-      if (from && to) bindings[to] = from;
+
+form.addEventListener("submit", (e) => {
+  e.preventDefault();
+  const fromKeys = form.querySelectorAll(".fromKey");
+  const toKeys = form.querySelectorAll(".toKey");
+  const bindings = {};
+
+  for (let i = 0; i < fromKeys.length; i++) {
+    const from = fromKeys[i].value.toLowerCase();
+    const to = toKeys[i].value;
+    if (from && to && fullKeyDetails[to]) {
+      bindings[to] = {
+        from,
+        eventDetails: fullKeyDetails[to]
+      };
     }
-
+  }
     chrome.storage.sync.set({ keybindings: bindings }, () => {
       chrome.tabs.query({ url: "*://www.youtube.com/*" }, (tabs) => {
         for (let tab of tabs) {
